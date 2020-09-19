@@ -1,21 +1,19 @@
-from gpiozero import DigitalInputDevice
-import time as time
+import pigpio
+import time
 
 
-class PWMInputDevice(DigitalInputDevice):
+class PWMInputDevice:
 
-  def __init__(self, pin=None, pull_up=False, active_state=None, bounce_time=None, pin_factory=None):
-    DigitalInputDevice.__init__(self, pin, pull_up, active_state, bounce_time, pin_factory)
-
+  def __init__(self, pin=None):
     self.last_activated = False
     self.pulse_width = False
+    self.pin = pin
+    self.pi = pigpio.pi()
+    self.pi.callback(self.pin, pigpio.RISING_EDGE, self.__when_activated)
+    self.pi.callback(self.pin, pigpio.FALLING_EDGE, self.__when_deactivated)
 
-    # Asignar funciones de GPIO.DigitalInputDevice
-    self.when_activated = self.__when_activated
-    self.when_deactivated = self.__when_deactivated
-
-  def __when_activated(self):
+  def __when_activated(self, gpio, level, tick):
     self.last_activated = time.time()
 
-  def __when_deactivated(self):
+  def __when_deactivated(self, gpio, level, tick):
     self.pulse_width = time.time() - self.last_activated

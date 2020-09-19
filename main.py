@@ -1,5 +1,7 @@
 from PWMChannel import PWMInputDevice
-from gpiozero import PWMOutputDevice
+import pigpio
+
+pi = pigpio.pi()
 
 PWM_FREQ = 500
 PWM_MIN_PERIOD = 0.001  # 1ms
@@ -14,9 +16,13 @@ input_channel = PWMInputDevice(24)
 ###########
 # Outputs #
 ###########
+output_pin = 23
 
-emulated_pwm = PWMOutputDevice(23, frequency=PWM_FREQ)
-emulated_pwm.blink(on_time=PWM_MIN_PERIOD, off_time=(1 / PWM_FREQ - PWM_MIN_PERIOD))
+percentage = PWM_FREQ * PWM_MIN_PERIOD
+duty_cycle = 255 * percentage
+
+pi.set_PWM_frequency(output_pin, PWM_FREQ)
+pi.set_PWM_dutycycle(output_pin, round(duty_cycle))
 
 while True:
   print(input_channel.pulse_width)
